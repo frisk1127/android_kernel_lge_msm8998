@@ -16,7 +16,8 @@ TFA98XX_FLAGS           := -DUSE_TFA9872
 # cc flags
 #ccflags-y               := -DDEBUG
 ccflags-y               += -I$(TFA_SRC_DIR)/inc
-ccflags-y               += -Werror
+# Disable -Werror to allow building with newer toolchains.
+ccflags-y               += -Wno-error
 ifdef TFA_DEBUG
 ccflags-y               += -DTFA_DEBUG
 endif
