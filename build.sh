@@ -34,8 +34,28 @@ if ! grep -q "^CONFIG_KSU=y" "${OUT_DIR}/.config"; then
   make O=${OUT_DIR} olddefconfig
 fi
 
+# Ensure manual hooks are enabled for 4.4 integration.
+if ! grep -q "^CONFIG_KSU_MANUAL_HOOK=y" "${OUT_DIR}/.config"; then
+  echo "[!] CONFIG_KSU_MANUAL_HOOK not set, enabling..."
+  if [ -x scripts/config ]; then
+    scripts/config --file "${OUT_DIR}/.config" -e KSU_MANUAL_HOOK
+  else
+    echo "CONFIG_KSU_MANUAL_HOOK=y" >> "${OUT_DIR}/.config"
+  fi
+  make O=${OUT_DIR} olddefconfig
+fi
+
 echo "[+] Building kernel..."
 # Old 4.4 trees often fail with modern toolchains due to -Werror. Disable Werror.
 make -j"$(nproc)" O=${OUT_DIR} WERROR=0 KCFLAGS="-Wno-error"
 
 echo "[+] Done. Output: ${OUT_DIR}/arch/arm64/boot/Image.gz-dtb"
+
+# Auto-generate AnyKernel3 zip if build succeeded.
+AK3_SCRIPT="./make_ak3.sh"
+if [ -x "${AK3_SCRIPT}" ]; then
+  echo "[+] Generating AnyKernel3 package..."
+  "${AK3_SCRIPT}"
+else
+  echo "[!] make_ak3.sh not found or not executable, skip AK3 packaging."
+fi
