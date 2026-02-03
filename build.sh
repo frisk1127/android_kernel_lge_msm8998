@@ -23,6 +23,17 @@ echo "[+] Log file: ${LOG_FILE}"
 echo "[+] Defconfig: lineageos_joan_defconfig"
 make O=${OUT_DIR} lineageos_joan_defconfig
 
+# Ensure KernelSU is enabled (the setup script adds CONFIG_KSU to defconfig, but double-check).
+if ! grep -q "^CONFIG_KSU=y" "${OUT_DIR}/.config"; then
+  echo "[!] CONFIG_KSU not set, enabling..."
+  if [ -x scripts/config ]; then
+    scripts/config --file "${OUT_DIR}/.config" -e KSU
+  else
+    echo "CONFIG_KSU=y" >> "${OUT_DIR}/.config"
+  fi
+  make O=${OUT_DIR} olddefconfig
+fi
+
 echo "[+] Building kernel..."
 # Old 4.4 trees often fail with modern toolchains due to -Werror. Disable Werror.
 make -j"$(nproc)" O=${OUT_DIR} WERROR=0 KCFLAGS="-Wno-error"
