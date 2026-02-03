@@ -1424,6 +1424,10 @@ int may_umount(struct vfsmount *mnt)
 
 EXPORT_SYMBOL(may_umount);
 
+/* forward declarations for path_umount (4.4 needs explicit prototypes) */
+static bool may_mount(void);
+static int do_umount(struct mount *mnt, int flags);
+
 static int can_umount(const struct path *path, int flags)
 {
 	struct mount *mnt = real_mount(path->mnt);
