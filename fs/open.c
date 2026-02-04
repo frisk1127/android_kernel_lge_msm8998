@@ -363,13 +363,16 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
 	unsigned int lookup_flags = LOOKUP_FOLLOW;
 
 #ifdef CONFIG_KSU_SUSFS
-    if (likely(susfs_is_current_proc_umounted()) || !ksu_su_compat_enabled) {
-        goto orig_flow;
-    }
+	if (!ksu_su_compat_enabled)
+		goto orig_flow;
 
-    if (unlikely(__ksu_is_allow_uid_for_current(current_uid().val))) {
-        ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
-    }
+	if (unlikely(__ksu_is_allow_uid_for_current(current_uid().val))) {
+		/*
+		 * Keep sucompat path rewrite for allowed UIDs even when SUSFS has
+		 * already marked current task as proc_umounted.
+		 */
+		ksu_handle_faccessat(&dfd, &filename, &mode, NULL);
+	}
 
 orig_flow:
 #endif

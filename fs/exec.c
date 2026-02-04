@@ -1542,12 +1542,19 @@ static int do_execveat_common(int fd, struct filename *filename,
 	if (IS_ERR(filename))
 		return PTR_ERR(filename);
 #ifdef CONFIG_KSU_SUSFS
-	if (likely(susfs_is_current_proc_umounted()) || !ksu_su_compat_enabled) {
+	if (!ksu_su_compat_enabled)
+		goto orig_flow;
+
+	if (likely(susfs_is_current_proc_umounted())) {
+		/* Keep sucompat reachable for allowed UIDs even after SUSFS umount mark. */
+		if (__ksu_is_allow_uid_for_current(current_uid().val))
+			ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
 		goto orig_flow;
 	}
+
 	if (unlikely(ksu_execveat_hook || !susfs_is_sdcard_android_data_decrypted)) {
 		ksu_handle_execveat(&fd, &filename, &argv, &envp, &flags);
-	} else if ((__ksu_is_allow_uid_for_current(current_uid().val))) {
+	} else if (__ksu_is_allow_uid_for_current(current_uid().val)) {
 		ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
 	}
 orig_flow:
