@@ -105,7 +105,9 @@ static void inotify_fdinfo(struct seq_file *m, struct fsnotify_mark *mark)
 	inode = igrab(mark->inode);
 	if (inode) {
 #ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
-		u32 mask = mark->mask & IN_ALL_EVENTS;
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+			u32 mask = mark->mask & IN_ALL_EVENTS;
+#endif
 		mnt = real_mount(file->f_path.mnt);
 		if (likely(susfs_is_current_proc_umounted()) &&
 		    mnt->mnt_id >= DEFAULT_KSU_MNT_ID) {
@@ -139,7 +141,11 @@ out_seq_printf:
 		 * least one bit (FS_EVENT_ON_CHILD) which is
 		 * used only internally to the kernel.
 		 */
-		u32 mask = mark->mask & IN_ALL_EVENTS;
+#ifdef CONFIG_KSU_SUSFS_SUS_MOUNT
+			mask = mark->mask & IN_ALL_EVENTS;
+#else
+			u32 mask = mark->mask & IN_ALL_EVENTS;
+#endif
 		seq_printf(m, "inotify wd:%x ino:%lx sdev:%x mask:%x ignored_mask:%x ",
 			   inode_mark->wd, inode->i_ino, inode->i_sb->s_dev,
 			   mask, mark->ignored_mask);

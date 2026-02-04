@@ -4194,26 +4194,8 @@ int vfs_unlink2(struct vfsmount *mnt, struct inode *dir, struct dentry *dentry, 
 				dont_mount(dentry);
 				detach_mounts(dentry);
 			}
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-			if (nd->state & ND_STATE_LAST_SDCARD_SUS_PATH) {
-				// - No need to dput() here
-				// - return -ENOENT here since it is walking the sub path of sus sdcard path
-				return -ENOENT;
 			}
-			if (parent->d_inode) {
-				if (susfs_is_base_dentry_android_data_dir(parent) &&
-					susfs_is_sus_android_data_d_name_found(name))
-				{
-					nd->state |= ND_STATE_LAST_SDCARD_SUS_PATH;
-				} else if (susfs_is_base_dentry_sdcard_dir(parent) &&
-						   susfs_is_sus_sdcard_d_name_found(name))
-				{
-					nd->state |= ND_STATE_LAST_SDCARD_SUS_PATH;
-				}
-			}
-#endif
 		}
-	}
 out:
 	mutex_unlock(&target->i_mutex);
 

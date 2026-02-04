@@ -57,6 +57,9 @@
 #include <linux/oom.h>
 #include <linux/compat.h>
 #include <linux/user_namespace.h>
+#ifdef CONFIG_KSU_SUSFS
+#include <linux/susfs_def.h>
+#endif
 
 #include <asm/uaccess.h>
 #include <asm/mmu_context.h>

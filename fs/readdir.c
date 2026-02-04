@@ -298,25 +298,6 @@ orig_flow:
 #endif
 	dirent = buf->previous;
 	if (dirent) {
-#ifdef CONFIG_KSU_SUSFS_SUS_PATH
-		if (buf->is_base_dentry_android_data_root_dir) {
-			if (susfs_is_sus_android_data_d_name_found(name))
-				return 0;
-		} else if (buf->is_base_dentry_sdcard_root_dir) {
-			if (susfs_is_sus_sdcard_d_name_found(name))
-				return 0;
-		}
-
-		inode = ilookup(buf->sb, ino);
-		if (!inode)
-			goto orig_flow;
-		if (susfs_is_inode_sus_path(inode)) {
-			iput(inode);
-			return 0;
-		}
-		iput(inode);
-orig_flow:
-#endif
 		if (__put_user(offset, &dirent->d_off))
 			goto efault;
 	}

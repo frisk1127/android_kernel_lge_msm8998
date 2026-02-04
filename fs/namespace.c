@@ -264,8 +264,7 @@ static struct mount *susfs_reuse_sus_vfsmnt(const char *name, int orig_mnt_id)
 		mnt->mnt_id = orig_mnt_id;
 
 		if (name) {
-			mnt->mnt_devname = kstrdup_const(name,
-											 GFP_KERNEL_ACCOUNT);
+				mnt->mnt_devname = kstrdup_const(name, GFP_KERNEL);
 			if (!mnt->mnt_devname)
 				goto out_free_cache;
 		}
@@ -318,8 +317,7 @@ static struct mount *susfs_alloc_sus_vfsmnt(const char *name)
 		mnt->mnt_id = DEFAULT_KSU_MNT_ID;
 
 		if (name) {
-			mnt->mnt_devname = kstrdup_const(name,
-											 GFP_KERNEL_ACCOUNT);
+				mnt->mnt_devname = kstrdup_const(name, GFP_KERNEL);
 			if (!mnt->mnt_devname)
 				goto out_free_cache;
 		}
