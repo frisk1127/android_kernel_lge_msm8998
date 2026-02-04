@@ -6,6 +6,7 @@ AKDIR="$ROOT/AnyKernel3"
 KSUDIR="$ROOT/KernelSU"
 OUT_IMG="$ROOT/out/arch/arm64/boot/Image.gz-dtb"
 OUT_DIR="$ROOT/out/arch/arm64/ak3"
+DEVICE_NAME="joan"
 
 if [ ! -f "$OUT_IMG" ]; then
   echo "[!] 未找到内核镜像: $OUT_IMG"
@@ -30,12 +31,12 @@ KSU_BRANCH="$(sed -n 's/^REPO_BRANCH := //p' "$KSUDIR/kernel/Kbuild" | head -n1)
 
 if [ -d "$KSUDIR/.git" ]; then
   KSU_SHORT_HASH="$(git -C "$KSUDIR" rev-parse --short=8 HEAD)"
-  KSU_LOCAL_COUNT="$(git -C "$KSUDIR" rev-list --count "$KSU_BRANCH")"
+  KSU_LOCAL_COUNT="$(git -C "$KSUDIR" rev-list --count HEAD)"
   KSU_VERSION_CODE="$((30000 + KSU_LOCAL_COUNT + 700))"
-  KSU_VERSION_NAME="v${KSU_API_VERSION}-${KSU_SHORT_HASH}@ReSukiSU"
+  KSU_VERSION_NAME="v${KSU_API_VERSION}-${KSU_SHORT_HASH}"
 else
   KSU_VERSION_CODE="unknown"
-  KSU_VERSION_NAME="v${KSU_API_VERSION}-unknown@ReSukiSU"
+  KSU_VERSION_NAME="v${KSU_API_VERSION}-unknown"
 fi
 
 # 打包到 out/arch/arm64/ak3
@@ -45,8 +46,17 @@ if [ -f "$ROOT/out/include/config/kernel.release" ]; then
 else
   KERNEL_UNAME="unknown-kernel"
 fi
+KERNEL_UNAME="${KERNEL_UNAME%%+}"
 
-ZIP_PATH="$OUT_DIR/${KSU_VERSION_NAME}-${KSU_VERSION_CODE}-${KERNEL_UNAME}-${TS}.zip"
+if [ -n "${AK3_SUSFS_MODE:-}" ]; then
+  BUILD_FLAVOR="${AK3_SUSFS_MODE}"
+elif grep -q '^CONFIG_KSU_SUSFS=y' "$ROOT/out/.config" 2>/dev/null; then
+  BUILD_FLAVOR="susfs"
+else
+  BUILD_FLAVOR="manualhook"
+fi
+
+ZIP_PATH="$OUT_DIR/${DEVICE_NAME}-ReSukiSU@${KSU_VERSION_NAME}-${KSU_VERSION_CODE}-${BUILD_FLAVOR}-${KERNEL_UNAME}-${TS}.zip"
 
 python3 - <<PY
 import os, zipfile

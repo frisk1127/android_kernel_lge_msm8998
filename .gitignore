@@ -124,3 +124,13 @@ android/configs/android-*.cfg
 #Ignoring Android.bp link file
 #
 Android.bp
+
+# local build outputs/logs
+/out/
+/logs/
+/config
+/AnyKernel3-*.zip
+/out/arch/arm64/ak3/
+
+# windows zone identifiers from WSL
+*:Zone.Identifier
