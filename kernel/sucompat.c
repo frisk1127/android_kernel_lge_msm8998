@@ -173,8 +173,13 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
     if (unlikely(!filename_ptr))
         return 0;
 
-    if (!is_allowed)
+    if (!is_allowed) {
+#ifdef CONFIG_KSU_DEBUG
+        pr_info_ratelimited("sucompat: deny execve uid=%d comm=%s\n",
+                            current_uid().val, current->comm);
+#endif
         return 0;
+    }
 
     filename = *filename_ptr;
     if (IS_ERR(filename)) {
@@ -189,10 +194,15 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
     ksu_sulog_report_su_attempt(current_uid().val, NULL, su_path, is_allowed);
 #endif
 
-    pr_info("do_execveat_common su found\n");
+    pr_info("sucompat: execve su found uid=%d comm=%s\n",
+            current_uid().val, current->comm);
     putname(filename);
     filename = getname_kernel(ksud_path);
     if (IS_ERR(filename)) {
+#ifdef CONFIG_KSU_DEBUG
+        pr_info_ratelimited("sucompat: getname_kernel failed err=%ld\n",
+                            PTR_ERR(filename));
+#endif
         return 0;
     }
     *filename_ptr = filename;
@@ -256,8 +266,13 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
         return 0;
     }
 
-    if (!ksu_is_allow_uid_for_current(current_uid().val))
+    if (!ksu_is_allow_uid_for_current(current_uid().val)) {
+#ifdef CONFIG_KSU_DEBUG
+        pr_info_ratelimited("sucompat: deny faccessat uid=%d comm=%s\n",
+                            current_uid().val, current->comm);
+#endif
         return 0;
+    }
 
     ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
@@ -311,8 +326,13 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
         return 0;
     }
 
-    if (!ksu_is_allow_uid_for_current(current_uid().val))
+    if (!ksu_is_allow_uid_for_current(current_uid().val)) {
+#ifdef CONFIG_KSU_DEBUG
+        pr_info_ratelimited("sucompat: deny stat uid=%d comm=%s\n",
+                            current_uid().val, current->comm);
+#endif
         return 0;
+    }
 
     ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
