@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-ROOT="/home/Frisk/android-kernel/4.4/android_kernel_lge_msm8998"
+ROOT="$(cd "$(dirname "$0")" && pwd)"
 AKDIR="$ROOT/AnyKernel3"
 KSUDIR="$ROOT/KernelSU"
 OUT_IMG="$ROOT/out/arch/arm64/boot/Image.gz-dtb"
