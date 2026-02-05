@@ -93,21 +93,6 @@ static char __user *ksud_user_path(void)
 static const char sh_path[] = SH_PATH;
 static const char su_path[] = SU_PATH;
 static const char ksud_path[] = KSUD_PATH;
-static const char su_path_xbin[] = "/system/xbin/su";
-static const char su_path_vendor[] = "/vendor/bin/su";
-static const char su_path_product[] = "/product/bin/su";
-static const char su_path_plain[] = "su";
-
-static inline bool ksu_is_su_path(const char *path)
-{
-    if (!path)
-        return false;
-
-    return strcmp(path, su_path) == 0 || strcmp(path, su_path_xbin) == 0 ||
-           strcmp(path, su_path_vendor) == 0 ||
-           strcmp(path, su_path_product) == 0 ||
-           strcmp(path, su_path_plain) == 0;
-}
 
 extern bool ksu_kernel_umount_enabled;
 
@@ -196,7 +181,7 @@ int ksu_handle_execveat_sucompat(int *fd, struct filename **filename_ptr,
         return 0;
     }
 
-    if (likely(!ksu_is_su_path(filename->name)))
+    if (likely(memcmp(filename->name, su_path, sizeof(su_path))))
         return 0;
 
 #if __SULOG_GATE
@@ -260,7 +245,7 @@ int ksu_handle_execveat(int *fd, struct filename **filename_ptr, void *argv,
 int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
                          int *__unused_flags)
 {
-    char path[64] = { 0 };
+    char path[sizeof(su_path) + 1] = { 0 };
 
     if (!ksu_su_compat_enabled) {
         return 0;
@@ -271,7 +256,7 @@ int ksu_handle_faccessat(int *dfd, const char __user **filename_user, int *mode,
 
     ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
-    if (unlikely(ksu_is_su_path(path))) {
+    if (unlikely(!memcmp(path, su_path, sizeof(su_path)))) {
 #if __SULOG_GATE
         ksu_sulog_report_syscall(current_uid().val, NULL, "faccessat", path);
 #endif
@@ -296,7 +281,7 @@ int ksu_handle_stat(int *dfd, struct filename **filename, int *flags)
         return 0;
     }
 
-    if (likely(!ksu_is_su_path((*filename)->name))) {
+    if (likely(memcmp((*filename)->name, su_path, sizeof(su_path)))) {
         return 0;
     }
 
@@ -311,7 +296,7 @@ int ksu_handle_stat(int *dfd, struct filename **filename, int *flags)
 #else
 int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 {
-    char path[64] = { 0 };
+    char path[sizeof(su_path) + 1] = { 0 };
 
     if (!ksu_su_compat_enabled) {
         return 0;
@@ -326,7 +311,7 @@ int ksu_handle_stat(int *dfd, const char __user **filename_user, int *flags)
 
     ksu_strncpy_from_user_nofault(path, *filename_user, sizeof(path));
 
-    if (unlikely(ksu_is_su_path(path))) {
+    if (unlikely(!memcmp(path, su_path, sizeof(su_path)))) {
 #if __SULOG_GATE
         ksu_sulog_report_syscall(current_uid().val, NULL, "newfstatat", path);
 #endif
