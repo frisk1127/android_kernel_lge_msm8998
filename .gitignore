@@ -132,5 +132,15 @@ Android.bp
 /AnyKernel3-*.zip
 /out/arch/arm64/ak3/
 
+# local workspace artifacts
+/AnyKernel3/
+/build.md
+/command.txt
+/docs/
+/install.md
+/last.txt
+/log.zip
+/manual-integrate.md
+
 # windows zone identifiers from WSL
 *:Zone.Identifier
