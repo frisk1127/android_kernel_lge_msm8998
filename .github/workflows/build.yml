@@ -27,9 +27,23 @@ jobs:
           sudo apt-get install -y \
             bc bison build-essential flex libssl-dev libelf-dev \
             python3 python3-pip git wget curl \
-            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
+            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi ccache
+
+      - name: Cache ccache
+        uses: actions/cache@v4
+        with:
+          path: ~/.ccache
+          key: ${{ runner.os }}-ccache-${{ github.ref_name }}-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-ccache-${{ github.ref_name }}-
+            ${{ runner.os }}-ccache-
 
       - name: Build
         run: |
+          export CCACHE_DIR="$HOME/.ccache"
+          export CCACHE_COMPILERCHECK=content
+          export CCACHE_MAXSIZE=5G
+          export CC="ccache clang"
+          export CXX="ccache clang++"
           chmod +x ./build.sh
           ./build.sh --susfs "${{ inputs.susfs }}" --localversion "${{ inputs.localversion }}"
