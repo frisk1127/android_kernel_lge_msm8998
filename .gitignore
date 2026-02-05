@@ -135,7 +135,6 @@ Android.bp
 /out/arch/arm64/ak3/
 
 # local workspace artifacts
-/AnyKernel3/
 /build.md
 /command.txt
 /docs/
