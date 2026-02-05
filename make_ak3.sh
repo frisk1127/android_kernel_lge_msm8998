@@ -30,13 +30,18 @@ KSU_BRANCH="$(sed -n 's/^REPO_BRANCH := //p' "$KSUDIR/kernel/Kbuild" | head -n1)
 [ -n "$KSU_BRANCH" ] || KSU_BRANCH="main"
 
 if [ -d "$KSUDIR/.git" ]; then
+  # Keep consistent with KernelSU/kernel/Kbuild:
+  # KSU_LOCAL_VERSION := git rev-list --count $(REPO_BRANCH)
+  if [ -f "$KSUDIR/../.git/shallow" ]; then
+    git -C "$KSUDIR" fetch --unshallow >/dev/null 2>&1 || true
+  fi
   KSU_SHORT_HASH="$(git -C "$KSUDIR" rev-parse --short=8 HEAD)"
-  KSU_LOCAL_COUNT="$(git -C "$KSUDIR" rev-list --count HEAD)"
+  KSU_LOCAL_COUNT="$(git -C "$KSUDIR" rev-list --count "$KSU_BRANCH")"
   KSU_VERSION_CODE="$((30000 + KSU_LOCAL_COUNT + 700))"
-  KSU_VERSION_NAME="v${KSU_API_VERSION}-${KSU_SHORT_HASH}"
+  KSU_VERSION_NAME="v${KSU_API_VERSION}-${KSU_SHORT_HASH}@ReSukiSU"
 else
   KSU_VERSION_CODE="unknown"
-  KSU_VERSION_NAME="v${KSU_API_VERSION}-unknown"
+  KSU_VERSION_NAME="v${KSU_API_VERSION}-unknown@ReSukiSU"
 fi
 
 # 打包到 out/arch/arm64/ak3
@@ -49,7 +54,11 @@ fi
 KERNEL_UNAME="${KERNEL_UNAME%%+}"
 
 if [ -n "${AK3_SUSFS_MODE:-}" ]; then
-  BUILD_FLAVOR="${AK3_SUSFS_MODE}"
+  case "${AK3_SUSFS_MODE}" in
+    on) BUILD_FLAVOR="susfs" ;;
+    off) BUILD_FLAVOR="manualhook" ;;
+    *) BUILD_FLAVOR="${AK3_SUSFS_MODE}" ;;
+  esac
 elif grep -q '^CONFIG_KSU_SUSFS=y' "$ROOT/out/.config" 2>/dev/null; then
   BUILD_FLAVOR="susfs"
 else
