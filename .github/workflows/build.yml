@@ -59,3 +59,6 @@ jobs:
           export CXX="ccache clang++"
           chmod +x ./build.sh
           ./build.sh --susfs "${{ inputs.susfs }}" --localversion "${{ inputs.localversion }}"
+
+      - name: Ccache Stats
+        run: ccache -s
