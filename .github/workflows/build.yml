@@ -1,0 +1,35 @@
+name: Build Kernel
+
+on:
+  workflow_dispatch:
+    inputs:
+      susfs:
+        description: "SUSFS mode: on/off"
+        required: false
+        default: "on"
+      localversion:
+        description: "Kernel LOCALVERSION (e.g. -Iseri_Nina)"
+        required: false
+        default: "-Iseri_Nina"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            bc bison build-essential flex libssl-dev libelf-dev \
+            python3 python3-pip git wget curl
+
+      - name: Build
+        run: |
+          chmod +x ./build.sh
+          ./build.sh --susfs "${{ inputs.susfs }}" --localversion "${{ inputs.localversion }}"
+

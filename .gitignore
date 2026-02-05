@@ -67,6 +67,8 @@ Module.symvers
 #
 !.gitignore
 !.mailmap
+!.github/
+!.github/workflows/
 
 #
 # Generated include files
