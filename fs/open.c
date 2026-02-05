@@ -367,6 +367,10 @@ SYSCALL_DEFINE3(faccessat, int, dfd, const char __user *, filename, int, mode)
 		goto orig_flow;
 
 	if (unlikely(__ksu_is_allow_uid_for_current(current_uid().val))) {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info_ratelimited("ksu: faccessat hook uid=%d comm=%s\n",
+				    current_uid().val, current->comm);
+#endif
 		/*
 		 * Keep sucompat path rewrite for allowed UIDs even when SUSFS has
 		 * already marked current task as proc_umounted.

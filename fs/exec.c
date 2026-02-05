@@ -1546,6 +1546,10 @@ static int do_execveat_common(int fd, struct filename *filename,
 		goto orig_flow;
 
 	if (likely(susfs_is_current_proc_umounted())) {
+#ifdef CONFIG_KSU_DEBUG
+		pr_info_ratelimited("ksu: proc_umounted uid=%d comm=%s\n",
+				    current_uid().val, current->comm);
+#endif
 		/* Keep sucompat reachable for allowed UIDs even after SUSFS umount mark. */
 		if (__ksu_is_allow_uid_for_current(current_uid().val))
 			ksu_handle_execveat_sucompat(&fd, &filename, &argv, &envp, &flags);
