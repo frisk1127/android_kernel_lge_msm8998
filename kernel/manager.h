@@ -21,6 +21,7 @@ extern void ksu_register_manager(u32 uid, u8 signature_index);
 extern void ksu_unregister_manager(u32 uid);
 extern void ksu_unregister_manager_by_signature_index(u8 signature_index);
 extern bool ksu_has_manager(void);
+void ksu_set_manager_appid(int appid);
 
 int ksu_observer_init(void);
 void ksu_observer_exit(void);

@@ -155,6 +155,20 @@ bool ksu_has_manager(void)
     return !empty;
 }
 
+void ksu_set_manager_appid(int appid)
+{
+    u16 appid_u16;
+
+    if (appid < 0) {
+        ksu_last_manager_appid = KSU_INVALID_APPID;
+        return;
+    }
+
+    appid_u16 = (u16)(appid % PER_USER_RANGE);
+    ksu_register_manager(appid_u16, 0);
+    ksu_last_manager_appid = appid_u16;
+}
+
 int ksu_get_manager_list(struct manager_list_info *info)
 {
     struct ksu_manager_node *pos;
