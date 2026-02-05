@@ -26,10 +26,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y \
             bc bison build-essential flex libssl-dev libelf-dev \
-            python3 python3-pip git wget curl
+            python3 python3-pip git wget curl \
+            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi
 
       - name: Build
         run: |
           chmod +x ./build.sh
           ./build.sh --susfs "${{ inputs.susfs }}" --localversion "${{ inputs.localversion }}"
-
