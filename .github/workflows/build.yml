@@ -15,6 +15,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_HARDLINK: "true"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -33,16 +37,24 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.ccache
-          key: ${{ runner.os }}-ccache-${{ github.ref_name }}-${{ github.sha }}
+          key: ${{ runner.os }}-ccache-${{ github.ref_name }}-${{ github.run_id }}
           restore-keys: |
             ${{ runner.os }}-ccache-${{ github.ref_name }}-
             ${{ runner.os }}-ccache-
 
+      - name: Configure ccache
+        run: |
+          mkdir -p ~/.ccache
+          ccache -M 10G
+          ccache --set-config=sloppiness=time_macros,file_macro,include_file_ctime,include_file_mtime
+          ccache --set-config=compiler_check=content
+          ccache --set-config=compression=true
+          ccache -z
+
       - name: Build
         run: |
           export CCACHE_DIR="$HOME/.ccache"
-          export CCACHE_COMPILERCHECK=content
-          export CCACHE_MAXSIZE=5G
+          export CCACHE_EXEC=/usr/bin/ccache
           export CC="ccache clang"
           export CXX="ccache clang++"
           chmod +x ./build.sh
