@@ -38,10 +38,10 @@ if [ -d "$KSUDIR/.git" ]; then
   KSU_SHORT_HASH="$(git -C "$KSUDIR" rev-parse --short=8 HEAD)"
   KSU_LOCAL_COUNT="$(git -C "$KSUDIR" rev-list --count "$KSU_BRANCH")"
   KSU_VERSION_CODE="$((30000 + KSU_LOCAL_COUNT + 700))"
-  KSU_VERSION_NAME="v${KSU_API_VERSION}-${KSU_SHORT_HASH}@ReSukiSU"
+  KSU_VERSION_NAME="v${KSU_API_VERSION}_${KSU_SHORT_HASH}"
 else
   KSU_VERSION_CODE="unknown"
-  KSU_VERSION_NAME="v${KSU_API_VERSION}-unknown@ReSukiSU"
+  KSU_VERSION_NAME="v${KSU_API_VERSION}_unknown"
 fi
 
 # 打包到 out/arch/arm64/ak3
@@ -65,7 +65,7 @@ else
   BUILD_FLAVOR="manualhook"
 fi
 
-ZIP_PATH="$OUT_DIR/${DEVICE_NAME}-ReSukiSU@${KSU_VERSION_NAME}-${KSU_VERSION_CODE}-${BUILD_FLAVOR}-${KERNEL_UNAME}-${TS}.zip"
+ZIP_PATH="$OUT_DIR/${DEVICE_NAME}_ReSukiSU@${KSU_VERSION_NAME}-${KSU_VERSION_CODE}_${BUILD_FLAVOR}_${KERNEL_UNAME}.zip"
 
 python3 - <<PY
 import os, zipfile
