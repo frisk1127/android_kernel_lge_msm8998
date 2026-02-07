@@ -61,4 +61,6 @@ jobs:
           ./build.sh --susfs "${{ inputs.susfs }}" --localversion "${{ inputs.localversion }}"
 
       - name: Ccache Stats
-        run: ccache -s
+        run: |
+          echo "Ccache 统计:"
+          ccache -s
