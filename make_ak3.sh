@@ -65,7 +65,15 @@ else
   BUILD_FLAVOR="manualhook"
 fi
 
-ZIP_PATH="$OUT_DIR/${DEVICE_NAME}_ReSukiSU@${KSU_VERSION_NAME}-${KSU_VERSION_CODE}_${BUILD_FLAVOR}_${KERNEL_UNAME}.zip"
+# Target format:
+#   joan_ReSukiSU@v4.1.0_47e75b0d-33826_susfs_4.4.302-Iseri_Nina.zip
+# Keep uname string as-is (read from out/include/config/kernel.release).
+ZIP_BASE="$OUT_DIR/${DEVICE_NAME}_ReSukiSU@${KSU_VERSION_NAME}-${KSU_VERSION_CODE}_${BUILD_FLAVOR}_${KERNEL_UNAME}.zip"
+ZIP_PATH="$ZIP_BASE"
+if [ -e "$ZIP_PATH" ]; then
+  TS=$(date +%Y%m%d-%H%M%S)
+  ZIP_PATH="${ZIP_BASE%.zip}_${TS}.zip"
+fi
 
 python3 - <<PY
 import os, zipfile

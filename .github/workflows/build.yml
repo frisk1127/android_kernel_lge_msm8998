@@ -31,7 +31,9 @@ jobs:
           sudo apt-get install -y \
             bc bison build-essential flex libssl-dev libelf-dev \
             python3 python3-pip git wget curl \
-            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi ccache
+            gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi \
+            clang lld llvm \
+            ccache
 
       - name: Cache ccache
         uses: actions/cache@v4
@@ -55,12 +57,39 @@ jobs:
         run: |
           export CCACHE_DIR="$HOME/.ccache"
           export CCACHE_EXEC=/usr/bin/ccache
+          export CCACHE_LOGFILE="$GITHUB_WORKSPACE/ccache.log"
           export CC="ccache clang"
           export CXX="ccache clang++"
           chmod +x ./build.sh
           ./build.sh --susfs "${{ inputs.susfs }}" --localversion "${{ inputs.localversion }}"
 
+      - name: Extract First Error (if any)
+        if: ${{ always() }}
+        run: |
+          set +e
+          LOG="$(ls -1t logs/build-*.log 2>/dev/null | head -n 1)"
+          if [ -z "$LOG" ]; then
+            echo "No build log found under logs/."
+            exit 0
+          fi
+          echo "Using log: $LOG"
+          echo "---- first matches ----"
+          rg -n -m 50 "(^|\\s)(error:|fatal error:|undefined reference|ld: |collect2:)" "$LOG" || true
+          echo "---- tail ----"
+          tail -n 120 "$LOG" || true
+
       - name: Ccache Stats
+        if: ${{ always() }}
         run: |
           echo "Ccache 统计:"
-          ccache -s
+          ccache -sv
+
+      - name: Upload Logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-logs
+          path: |
+            logs/build-*.log
+            ccache.log
+            out/.config
