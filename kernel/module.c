@@ -2776,8 +2776,10 @@ static int copy_module_from_fd(int fd, struct load_info *info)
 
 	pos = 0;
 	while (pos < stat.size) {
-		bytes = kernel_read(f.file, pos, (char *)(info->hdr) + pos,
-				    stat.size - pos);
+		loff_t read_pos = pos;
+
+		bytes = kernel_read(f.file, (char *)(info->hdr) + pos,
+				    stat.size - pos, &read_pos);
 		if (bytes < 0) {
 			vfree(info->hdr);
 			err = bytes;
@@ -2785,7 +2787,7 @@ static int copy_module_from_fd(int fd, struct load_info *info)
 		}
 		if (bytes == 0)
 			break;
-		pos += bytes;
+		pos = read_pos;
 	}
 	info->len = pos;
 

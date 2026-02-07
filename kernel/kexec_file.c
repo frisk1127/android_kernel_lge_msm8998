@@ -67,8 +67,10 @@ static int copy_file_from_fd(int fd, void **buf, unsigned long *buf_len)
 
 	pos = 0;
 	while (pos < stat.size) {
-		bytes = kernel_read(f.file, pos, (char *)(*buf) + pos,
-				    stat.size - pos);
+		loff_t read_pos = pos;
+
+		bytes = kernel_read(f.file, (char *)(*buf) + pos,
+				    stat.size - pos, &read_pos);
 		if (bytes < 0) {
 			vfree(*buf);
 			ret = bytes;
@@ -77,7 +79,7 @@ static int copy_file_from_fd(int fd, void **buf, unsigned long *buf_len)
 
 		if (bytes == 0)
 			break;
-		pos += bytes;
+		pos = read_pos;
 	}
 
 	if (pos != stat.size) {

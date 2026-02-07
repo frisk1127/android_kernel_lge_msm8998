@@ -328,6 +328,7 @@ static int fw_read_file_contents(struct file *file, struct firmware_buf *fw_buf)
 	int size;
 	char *buf;
 	int rc;
+	loff_t pos = 0;
 
 	if (!S_ISREG(file_inode(file)->i_mode))
 		return -EINVAL;
@@ -344,7 +345,7 @@ static int fw_read_file_contents(struct file *file, struct firmware_buf *fw_buf)
 		buf = vmalloc(size);
 	if (!buf)
 		return -ENOMEM;
-	rc = kernel_read(file, 0, buf, size);
+	rc = kernel_read(file, buf, size, &pos);
 	if (rc != size) {
 		if (rc > 0)
 			rc = -EIO;
