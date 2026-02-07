@@ -3,10 +3,15 @@ set -euo pipefail
 
 export ARCH=arm64
 export SUBARCH=arm64
-export CC=clang
-export CLANG_TRIPLE=aarch64-linux-gnu-
-export CROSS_COMPILE=aarch64-linux-gnu-
-export CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+
+# Allow CI/local callers to override toolchain via environment (e.g. CC="ccache clang").
+: "${CC:=clang}"
+export CC
+
+: "${CLANG_TRIPLE:=aarch64-linux-gnu-}"
+: "${CROSS_COMPILE:=aarch64-linux-gnu-}"
+: "${CROSS_COMPILE_ARM32:=arm-linux-gnueabi-}"
+export CLANG_TRIPLE CROSS_COMPILE CROSS_COMPILE_ARM32
 
 OUT_DIR=out
 LOG_DIR=logs
@@ -72,7 +77,14 @@ if [ "${SUSFS_MODE}" != "on" ] && [ "${SUSFS_MODE}" != "off" ]; then
   exit 1
 fi
 
-MAKE_ARGS=(O="${OUT_DIR}" LOCALVERSION="${KERNEL_LOCALVERSION}")
+MAKE_ARGS=(
+  O="${OUT_DIR}"
+  LOCALVERSION="${KERNEL_LOCALVERSION}"
+  CC="${CC}"
+  CLANG_TRIPLE="${CLANG_TRIPLE}"
+  CROSS_COMPILE="${CROSS_COMPILE}"
+  CROSS_COMPILE_ARM32="${CROSS_COMPILE_ARM32}"
+)
 
 mkdir -p "${LOG_DIR}"
 exec > >(tee -a "${LOG_FILE}") 2>&1
@@ -84,6 +96,7 @@ if [ -n "${KSU_REF}" ] && [ -d "KernelSU/.git" ]; then
 fi
 
 echo "[+] Using clang: $(command -v clang)"
+echo "[+] CC: ${CC}"
 echo "[+] Using CROSS_COMPILE: ${CROSS_COMPILE}"
 echo "[+] Using CROSS_COMPILE_ARM32: ${CROSS_COMPILE_ARM32}"
 echo "[+] Using LOCALVERSION: ${KERNEL_LOCALVERSION}"
